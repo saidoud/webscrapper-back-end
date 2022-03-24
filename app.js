@@ -8,6 +8,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var scrapperRouter = require('./routes/scrapper');
 
+const port = 8080;
+
 var app = express();
 
 // view engine setup
@@ -72,7 +74,7 @@ puppeteer.use(StealthPlugin())
 //   console.log("Error")
 // })
 
-app.listen(8080, function () {
+app.listen(port, function () {
   console.log('app listening on port 8080!')
 })
 

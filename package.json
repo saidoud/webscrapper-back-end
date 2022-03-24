@@ -15,7 +15,9 @@
     "puppeteer": "^13.5.1",
     "puppeteer-extra": "^3.2.3",
     "puppeteer-extra-plugin-recaptcha": "^3.5.0",
-    "puppeteer-extra-plugin-stealth": "^2.9.0",
-    "user-agents": "^1.0.964"
+    "puppeteer-extra-plugin-stealth": "^2.9.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }

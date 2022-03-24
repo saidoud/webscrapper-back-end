@@ -10,7 +10,7 @@ puppeteer.use(StealthPlugin())
 const url = 'https://www.mediamarkt.es';
 
 
-/* GET Scrapper page. */
+/* GET Category. */
 router.get('/', function (req, res, next) {
     puppeteer.launch({ headless: false }).then(async browser => {
         console.log('Running tests..')
@@ -19,14 +19,32 @@ router.get('/', function (req, res, next) {
 
         // Accept Cookie
         await page.click("#pwa-consent-layer-accept-all-button");
-        await page.waitForTimeout(3000)
+        await page.waitForTimeout(1000)
 
         // Click Category
         await page.click("#mms-app-header-category-button");
-        await page.waitForTimeout(4335)
+        await page.waitForTimeout(2335)
 
         // Hover Category
         await page.hover('a[aria-label="Informática"]')
+        // let data = await page.evaluate(() => {
+        //     return document.querySelectorAll('[data-keyboard-id="desktop-flyout"] ul[aria-label="Portátiles"]')
+        // })
+
+
+        const category = await page.evaluate(() => {
+            var res = [];
+            const name = Array.from(document.querySelectorAll('[data-keyboard-id="desktop-flyout"] ul[aria-label="Portátiles"] li a span'));
+            const links = Array.from(document.querySelectorAll('[data-keyboard-id="desktop-flyout"] ul[aria-label="Portátiles"] li a'))
+            const nameArr = name.map(name => name.textContent);
+            const linksArr = links.map(links => links.getAttribute('href'))
+
+
+            return linksArr[0];
+
+        })
+
+        console.log(category)
 
         // await browser.close()
     }).catch(() => {
@@ -36,6 +54,11 @@ router.get('/', function (req, res, next) {
     res.send('respond with a resource');
 
 });
+
+/* GET Product. */
+router.get('/product', function (req, res, next) {
+    // code
+})
 
 
 module.exports = router;
