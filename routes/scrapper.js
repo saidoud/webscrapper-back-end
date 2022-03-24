@@ -68,23 +68,41 @@ router.get('/product', function (req, res, next) {
         await page.click("#pwa-consent-layer-accept-all-button");
         await page.waitForTimeout(1000);
 
+        // get product info
         const products = await page.evaluate(() => {
             var res = [];
             const name = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-title"]'));
             const url = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] > a'))
-            const price = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-price"] [data-test="mms-unbranded-price"] .StyledStrikePriceWrapper-jah2p3-5'));
-            const brand = "brand product";
-            const rating = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [aria-label="productRow.ratingLabel"]'));
-            const availibility = "InStock";
+            const ratingNumber = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [aria-label="productRow.ratingLabel"]'));
+            const image = Array.from(document.querySelectorAll('[data-test="product-image"] picture img'));
+            const price = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-price"] > div > div > div'));
+            const rating = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="mms-customer-rating"]'));
             const delivery = "24h";
+            const brand = "brand product";
+            const availibility = "InStock";
             const specificatins = "";
 
-            const nameArr = name.map(item => item.textContent);
-            const urlArr = url.map(item => item.getAttribute('href'));
-            //const priceArr = url.map((item) => item.textContent);
-            // const ratingArr = rating.map(item => parseInt(item.textContent.charAt(1)));
-            const ratingArr = rating.map(item => item.textContent);
-            return ratingArr;
+            const nameArr = name.map(item => item.textContent); //ok
+            const urlArr = url.map(item => item.getAttribute('href')); //ok
+            const ratingNumberArr = ratingNumber.map(item => parseInt(item.textContent.charAt(1))); //ok
+            const imageArr = image.map(item => item.getAttribute('src')); //ok
+            const priceArr = price.map(item => parseFloat(item.querySelector('div > div > span:nth-child(3)').textContent)); //ok
+            const ratingArr = rating.map(item => 5 - item.querySelectorAll('[color="#cfcbca"]').length)
+
+            // create products array
+            for (let i = 0; i < nameArr.length; i++) {
+                let data = Object.assign({
+                    id: i,
+                    name: nameArr[i],
+                    url: urlArr[i],
+                    ratingNumber: ratingNumberArr[i],
+                    rating: ratingArr[i],
+                    imageUrl: imageArr[i],
+                    price: priceArr[i]
+                });
+                res.push(data);
+            }
+            return res;
 
         })
 
