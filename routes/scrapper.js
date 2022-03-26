@@ -40,21 +40,25 @@ router.get('/category', function (req, res, next) {
             const linksArr = links.map(links => links.getAttribute('href'));
 
             for (let i = 0; i < 3; i++) {
-                let data = Object.assign({ id: i, name: nameArr[i], link: linksArr[i] });
+                let data = Object.assign({ id: i, name: nameArr[i], url: linksArr[i] });
                 result.push(data);
             }
             return result;
         })
 
         console.log(category)
+        res.json({
+            confirmation: 'success',
+            data: category
+        })
 
         await browser.close()
-    }).catch(() => {
-        console.log("Somthing Wrong")
+    }).catch((err) => {
+        res.json({
+            confirmation: 'Faild !',
+            message: err.message
+        })
     })
-
-    res.send('Get Category');
-
 });
 
 /* GET Product. */
@@ -69,12 +73,11 @@ router.post('/product', function (req, res, next) {
         // Accept Cookie
         await page.click("#pwa-consent-layer-accept-all-button");
         //  await page.waitForTimeout(1000);
-        // scroll down
+        // scroll down for load image source
         await autoScroll(page);
         // get product info
         const products = await page.evaluate(() => {
             var result = [];
-
 
             const name = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-title"]'));
             const url = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] > a'))
