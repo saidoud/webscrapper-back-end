@@ -9,12 +9,12 @@ puppeteer.use(StealthPlugin())
 // constant
 const url = 'https://www.mediamarkt.es';
 const numCategory = 3;
-const categoryUrl = "/es/category/portátiles-de-menos-de-14-155.html";
+const categoryUrl = "/es/category/convertibles-2-en-1-160.html";
 
 
 
 /* GET Category. */
-router.get('/', function (req, res, next) {
+router.get('/category', function (req, res, next) {
     puppeteer.launch({ headless: false }).then(async browser => {
         console.log('Running tests..')
         const page = await browser.newPage()
@@ -32,7 +32,7 @@ router.get('/', function (req, res, next) {
         await page.hover('a[aria-label="Informática"]')
 
         const category = await page.evaluate(() => {
-            var res = [];
+            var result = [];
             const name = Array.from(document.querySelectorAll('[data-keyboard-id="desktop-flyout"] ul[aria-label="Portátiles"] li a span'));
             const links = Array.from(document.querySelectorAll('[data-keyboard-id="desktop-flyout"] ul[aria-label="Portátiles"] li a'));
 
@@ -41,9 +41,9 @@ router.get('/', function (req, res, next) {
 
             for (let i = 0; i < 3; i++) {
                 let data = Object.assign({ id: i, name: nameArr[i], link: linksArr[i] });
-                res.push(data);
+                result.push(data);
             }
-            return res;
+            return result;
         })
 
         console.log(category)
@@ -58,7 +58,9 @@ router.get('/', function (req, res, next) {
 });
 
 /* GET Product. */
-router.get('/product', function (req, res, next) {
+router.post('/product', function (req, res, next) {
+    const categoryUrl = req.body.category_url;
+
     puppeteer.launch({ headless: false }).then(async browser => {
         console.log('Running tests..')
         const page = await browser.newPage()
@@ -66,11 +68,14 @@ router.get('/product', function (req, res, next) {
 
         // Accept Cookie
         await page.click("#pwa-consent-layer-accept-all-button");
-        await page.waitForTimeout(1000);
-
+        //  await page.waitForTimeout(1000);
+        // scroll down
+        await autoScroll(page);
         // get product info
         const products = await page.evaluate(() => {
-            var res = [];
+            var result = [];
+
+
             const name = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-title"]'));
             const url = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] > a'))
             const ratingNumber = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [aria-label="productRow.ratingLabel"]'));
@@ -100,21 +105,46 @@ router.get('/product', function (req, res, next) {
                     imageUrl: imageArr[i],
                     price: priceArr[i]
                 });
-                res.push(data);
+                result.push(data);
             }
-            return res;
-
+            return result;
         })
 
-        console.log(products)
+        console.log(products);
+        res.json({
+            confirmation: 'success',
+            data: products
 
+        })
         // await browser.close()
-    }).catch(() => {
-        console.log("Somthing Wrong")
-    })
+    }).catch((err) => {
+        res.json({
+            confirmation: 'Faild !',
+            message: err.message
+        })
 
-    res.send('Get Product');
+    })
 })
+
+// Scroll Down for load image
+async function autoScroll(page) {
+    await page.evaluate(async () => {
+        await new Promise((resolve, reject) => {
+            var totalHeight = 0;
+            var distance = 100;
+            var timer = setInterval(() => {
+                var scrollHeight = document.body.scrollHeight;
+                window.scrollBy(0, distance);
+                totalHeight += distance;
+
+                if (totalHeight >= scrollHeight - window.innerHeight) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 100);
+        });
+    });
+}
 
 
 module.exports = router;
