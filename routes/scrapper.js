@@ -39,7 +39,7 @@ router.get('/category', function (req, res, next) {
             const nameArr = name.map(name => name.textContent);
             const linksArr = links.map(links => links.getAttribute('href'));
 
-            for (let i = 0; i < 3; i++) {
+            for (let i = 1; i < 4; i++) {
                 let data = Object.assign({ id: i, name: nameArr[i], url: linksArr[i] });
                 result.push(data);
             }
@@ -81,21 +81,63 @@ router.post('/product', function (req, res, next) {
 
             const name = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-title"]'));
             const url = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] > a'))
-            const ratingNumber = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [aria-label="productRow.ratingLabel"]'));
+            //  const ratingNumber = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [aria-label="productRow.ratingLabel"]'));
+            //const ratingNumber = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="mms-customer-rating"]'))
             const image = Array.from(document.querySelectorAll('[data-test="product-image"] picture img'));
             const price = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-price"] > div > div > div'));
             const rating = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="mms-customer-rating"]'));
+            const specifications = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] ul[data-test="feature-list"]'));
             const delivery = "24h";
             const brand = "brand product";
             const availibility = "InStock";
-            const specificatins = "";
 
             const nameArr = name.map(item => item.textContent); //ok
             const urlArr = url.map(item => item.getAttribute('href')); //ok
-            const ratingNumberArr = ratingNumber.map(item => parseInt(item.textContent.charAt(1))); //ok
+            const ratingNumberArr = rating.map(item => parseInt(item.querySelector('span').textContent.charAt(1))); //ok
             const imageArr = image.map(item => item.getAttribute('src')); //ok
-            const priceArr = price.map(item => parseFloat(item.querySelector('div > div > span:nth-child(3)').textContent)); //ok
-            const ratingArr = rating.map(item => 5 - item.querySelectorAll('[color="#cfcbca"]').length)
+            const priceArr = price.map(item => {
+                if (item.querySelector('div').childElementCount === 2)
+                    return parseFloat(item.querySelector('div:nth-child(2) > span:nth-child(3)').textContent)
+                else
+                    return parseFloat(item.querySelector('div > div > span:nth-child(3)').textContent)
+
+            }
+            ); //ok
+            const ratingArr = rating.map(item => 5 - item.querySelectorAll('[color="#cfcbca"]').length); //ok
+
+            const specificationsArr = specifications.map(item => {
+                const data = Array.from(item.querySelectorAll('li'));
+                let specItem = [];
+
+                for (let i = 0; i < data.length; i++) {
+                    const title = data[i].querySelector('div:nth-child(1)').textContent;
+                    const subTitle = data[i].querySelector('div:nth-child(2)').textContent;
+
+                    let specification = Object.assign({
+                        key: title,
+                        value: subTitle
+                    });
+                    specItem.push(specification);
+                }
+
+                return specItem;
+            });
+
+            // const ratingArr = rating.map(item => {
+            //     let finalRating = 0;
+            //     const data = Array.from(item.querySelectorAll('svg'));
+            //     console.log("data...")
+            //     console.log(data)
+
+            //     for (let i; i < data.length; i++) {
+            //         if (data[i].childElementCount === 1)
+            //             finalRating++;
+            //         if (data[i].childElementCount === 2)
+            //             finalRating = finalRating + 0.5;
+            //     }
+            //     return finalRating;
+
+            // })
 
             // create products array
             for (let i = 0; i < nameArr.length; i++) {
@@ -106,7 +148,8 @@ router.post('/product', function (req, res, next) {
                     ratingNumber: ratingNumberArr[i],
                     rating: ratingArr[i],
                     imageUrl: imageArr[i],
-                    price: priceArr[i]
+                    price: priceArr[i],
+                    specifications: specificationsArr[i]
                 });
                 result.push(data);
             }
@@ -144,7 +187,7 @@ async function autoScroll(page) {
                     clearInterval(timer);
                     resolve();
                 }
-            }, 100);
+            }, 200);
         });
     });
 }
