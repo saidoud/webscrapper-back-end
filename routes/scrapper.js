@@ -7,7 +7,7 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 puppeteer.use(StealthPlugin())
 
 // constant
-const url = 'https://www.mediamarkt.es';
+const urlPage = 'https://www.mediamarkt.es';
 const numCategory = 3;
 const categoryUrl = "/es/category/convertibles-2-en-1-160.html";
 
@@ -18,7 +18,7 @@ router.get('/category', function (req, res, next) {
     puppeteer.launch({ headless: false }).then(async browser => {
         console.log('Running tests..')
         const page = await browser.newPage()
-        await page.goto(url, { waitUntil: "networkidle2" })
+        await page.goto(urlPage, { waitUntil: "networkidle2" })
 
         // Accept Cookie
         await page.click("#pwa-consent-layer-accept-all-button");
@@ -68,7 +68,7 @@ router.post('/product', function (req, res, next) {
     puppeteer.launch({ headless: false }).then(async browser => {
         console.log('Running tests..')
         const page = await browser.newPage()
-        await page.goto(url + categoryUrl, { waitUntil: "networkidle2" })
+        await page.goto(urlPage + categoryUrl, { waitUntil: "networkidle2" })
 
         // Accept Cookie
         await page.click("#pwa-consent-layer-accept-all-button");
@@ -87,9 +87,9 @@ router.post('/product', function (req, res, next) {
             const price = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-price"] > div > div > div'));
             const rating = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="mms-customer-rating"]'));
             const specifications = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] ul[data-test="feature-list"]'));
-            const delivery = "24h";
+            const availibility = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"]'))
+            const delivery = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"]'));
             const brand = "brand product";
-            const availibility = "InStock";
 
             const nameArr = name.map(item => item.textContent); //ok
             const urlArr = url.map(item => item.getAttribute('href')); //ok
@@ -123,6 +123,25 @@ router.post('/product', function (req, res, next) {
                 return specItem;
             });
 
+            const availibilityArr = availibility.map(item => {
+                const attribute = item.querySelector('[data-test="product-availability"] div div').getAttribute('data-test');
+
+                if (attribute === 'mms-delivery-online-availability_PARTIAL_AVAILABLE')
+                    return "Partial Available"
+                if (attribute === 'mms-delivery-online-availability_AVAILABLE')
+                    return "In Stock"
+                if (attribute === 'mms-delivery-online-availability_NOT_AVAILABLE')
+                    return 'Not Available'
+                else
+                    return "Unknown availability"
+            });
+
+            const deliveryArr = delivery.map(item => {
+                const attribute = item.querySelector('[data-test="product-availability"] div div').getAttribute('data-test');
+                const data = Array.from(item.querySelectorAll(`[data-test=${attribute}]`));
+                return data[1].textContent
+            })
+
             // const ratingArr = rating.map(item => {
             //     let finalRating = 0;
             //     const data = Array.from(item.querySelectorAll('svg'));
@@ -149,7 +168,9 @@ router.post('/product', function (req, res, next) {
                     rating: ratingArr[i],
                     imageUrl: imageArr[i],
                     price: priceArr[i],
-                    specifications: specificationsArr[i]
+                    specifications: specificationsArr[i],
+                    availibility: availibilityArr[i],
+                    delivery: deliveryArr[i]
                 });
                 result.push(data);
             }
