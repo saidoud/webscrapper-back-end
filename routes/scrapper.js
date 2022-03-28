@@ -183,7 +183,7 @@ router.post('/product', function (req, res, next) {
             data: products
 
         })
-        // await browser.close()
+        await browser.close()
     }).catch((err) => {
         res.json({
             confirmation: 'Faild !',
