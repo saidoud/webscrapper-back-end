@@ -80,7 +80,7 @@ router.post('/product', function (req, res, next) {
             var result = [];
 
             const name = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="product-title"]'));
-            const url = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] > a'))
+            const url = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] > div > a'))
             //  const ratingNumber = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [aria-label="productRow.ratingLabel"]'));
             //const ratingNumber = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] [data-test="mms-customer-rating"]'))
             const image = Array.from(document.querySelectorAll('[data-test="product-image"] picture img'));
@@ -89,7 +89,7 @@ router.post('/product', function (req, res, next) {
             const specifications = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"] ul[data-test="feature-list"]'));
             const availibility = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"]'))
             const delivery = Array.from(document.querySelectorAll('[data-test="mms-search-srp-productlist-item"]'));
-            const brand = "brand product";
+            // const brand = "brand product";
 
             const nameArr = name.map(item => item.textContent); //ok
             const urlArr = url.map(item => item.getAttribute('href')); //ok
